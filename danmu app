@@ -1,0 +1,145 @@
+HTML:
+
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>弹幕墙</title>
+</head>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<link rel="stylesheet" href="css/css5.css">
+<script src="js/js5.js"></script>
+<body>
+<div class="container" id="container">
+	<div class="show">
+
+	</div>
+	<div class="control">
+		<input type="textarea" id="say" placeholder="说点什么">
+		<button type="submit" id="send">发送弹幕</button>
+		<button type="submit" id="clear">清除弹幕</button>
+	</div> 
+</div>
+</body>
+</html>
+
+CSS:
+
+.container{
+	width: 95%;
+	height:auto;
+	margin: 0 auto;
+	border: #dfdede solid 1px;
+	background-color: #dfdede;
+	overflow:hidden;
+}
+.show{
+	position:relative;
+	width:90%;
+	height:400px;
+	margin: 30px auto;
+	border: #aaa solid 1px;
+	background-color: white;
+	-webkit-box-shadow:2px 2px 2px 0px rgba(0, 0, 0, 0.1);
+	box-shadow:2px 2px 2px 0px rgba(0, 0, 0, 0.1);
+  
+}
+
+.control{
+	width:90%;
+	height: 100px;
+	margin: 30px 0 0 30%
+}
+#say{
+	width: 200px;
+	height: 20px;
+}
+button{
+	padding: 5px 20px;
+	border-radius: 3px;
+	border: 1px solid #e0e0e0;
+	margin: 15px;
+	background: #37a;
+	color: #fff;
+	cursor: pointer;
+}
+
+
+JS:
+var arr = [];
+$(document).ready(function(){
+
+	var show = $(".show");                         //显示弹幕的div
+	var showHeight = show.height();                //此div的高度
+	var showWidth = show.width();                  //此div的宽度
+	
+	$("#send").click(function(){                   //点击”发送弹幕“事件
+		
+		var saytext = $("#say").val();             //获取输入值
+		
+		if(saytext.length > 15){
+			alert("字数不得超过15个！");           //长度限制
+			return $("#say").val("");
+		}
+		
+		$("#say").val("");                         //删除面板上输入
+		arr.push(saytext);                         //把输入值加入集合
+  
+		var textObj = $("<div>"+saytext+"</div>"); //创建弹幕的div块
+		show.append(textObj);                      //加入弹幕
+		moveObj(textObj);                         //让弹幕动起来，函数后面会写
+		
+	});
+	
+	
+	$("#clear").click(function(){                  //点击清除事件
+		return show.empty();
+	});
+	
+	var topMin = show.offset().top;                //此div的最低高度位置
+	var topMax = topMin + showHeight;              //此div的最高高度位置
+	var top = topMin;                              //初始top值
+	
+	var moveObj = function(obj){                  //创建让弹幕动起来的函数
+		obj.css({                                  //设置单个弹幕的css样式
+			display:"inline",
+			position:"absolute"
+		});
+		var begin = showWidth - obj.width();       //设置弹幕的水平初始位置
+		top+=50;                                   //每次加50
+		
+		if(top > topMax - 80){                      //重置top
+			top = topMin;
+		}
+		
+		obj.css({                                  //把初始值加入到弹幕的css中
+			left:begin,
+			top:top,
+			color:getRandomColor(),
+		})
+		
+		var time = 2000 + 10000*Math.random();     //设置动起来的时间
+		obj.animate({                              //设置动起来的效果
+			left:0
+		},time,function(){
+			obj.remove();
+		})
+	}
+		
+	var getRandomColor = function(){               //随机颜色
+		return '#'+('00000'+(Math.random()*0xffffff <<0).toString(16)).substr(-6); 
+	}
+
+	var runDanMu = function(){                     //创建arr集合的随机弹幕移动
+		if(arr && arr.length > 0){
+			var n = Math.floor(Math.random()*arr.length + 1)-1;
+			var textObj = $("<div>"+arr[n]+"</div>");
+			show.append(textObj);
+			moveObj(textObj);
+		}
+		setTimeout(runDanMu,2000);
+	}
+
+	jQuery.fx.interval = 50;
+	runDanMu();	
+})
